@@ -1,0 +1,25 @@
+{
+	"ImportPath": "github.com/simonswine/hacknight-slack-bot",
+	"GoVersion": "go1.5.1",
+	"Deps": [
+		{
+			"ImportPath": "github.com/Sirupsen/logrus",
+			"Comment": "v0.8.7-55-gf7f79f7",
+			"Rev": "f7f79f729e0fbe2fcc061db48a9ba0263f588252"
+		},
+		{
+			"ImportPath": "github.com/nlopes/slack",
+			"Comment": "v0.0.1-76-ga6a2e43",
+			"Rev": "a6a2e430fd2e1bc1f91c0fd538e5c2d0c898f5dc"
+		},
+		{
+			"ImportPath": "golang.org/x/net/websocket",
+			"Rev": "db8e4de5b2d6653f66aea53094624468caad15d2"
+		},
+		{
+			"ImportPath": "gopkg.in/olivere/elastic.v3",
+			"Comment": "v3.0.21",
+			"Rev": "6d1954a560f885207ff84c32ed0aaaebf11ec599"
+		}
+	]
+}
