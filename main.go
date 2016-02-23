@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"reflect"
+	"time"
 )
 
 type Quote struct {
@@ -21,20 +22,21 @@ type Quote struct {
 type SlackBot struct {
 	Quotes      *[]Quote
 	esClient    *elastic.Client
+	EsUrl       string
 	IndexName   string
-	slackApiKey string
+	SlackApiKey string
 }
 
 func NewSlackBot() *SlackBot {
 	return &SlackBot{
 		IndexName:   "quotes",
-		slackApiKey: "xoxb-22757066566-LtgYbLxQcDpedIKOe11PPFFH",
+		SlackApiKey: "notworking",
 	}
 }
 
 func (sb *SlackBot) connectEs() (err error) {
 	// Create a client
-	client, err := elastic.NewClient(elastic.SetURL("http://192.168.7.188:9200"))
+	client, err := elastic.NewClient(elastic.SetURL(sb.EsUrl))
 	if err != nil {
 		log.Warn("Connection error: ", err)
 		return err
@@ -162,7 +164,7 @@ func (sb *SlackBot) httpQuery(w http.ResponseWriter, r *http.Request) {
 }
 
 func (sb *SlackBot) connectSlack() {
-	api := slack.New(sb.slackApiKey)
+	api := slack.New(sb.SlackApiKey)
 
 	rtm := api.NewRTM()
 	log.Info("Connecting to slack")
@@ -239,6 +241,43 @@ func main() {
 	log.Info("Initializing slack quote bot...")
 
 	sb := NewSlackBot()
+
+	// slack api token
+	slackApiToken := os.Getenv("SLACK_API_TOKEN")
+	if slackApiToken == "" {
+		log.Fatal("Please provide a Slack API token as environment variable SLACK_API_TOKEN")
+	}
+	sb.SlackApiKey = slackApiToken
+	log.Infof("Use slack api token: %s", sb.SlackApiKey)
+
+	// elasticsearch
+	esHost := os.Getenv("ELASTICSEARCH_PORT_9200_TCP_ADDR")
+	if esHost == "" {
+		esHost = "127.0.0.1"
+	}
+	esPort := os.Getenv("ELASTICSEARCH_PORT_9200_TCP_PORT")
+	if esPort == "" {
+		esPort = "9200"
+	}
+	sb.EsUrl = fmt.Sprintf("http://%s:%s", esHost, esPort)
+	log.Infof("Use elasticsearch url: %s", sb.EsUrl)
+
+	// ensure elasticsearch is up
+	try := 1
+	maxTries := 64
+	for i := 0; i < 10; i++ {
+		resp, err := http.Get(sb.EsUrl)
+		if err == nil && resp.StatusCode == 200 {
+			break
+		} else {
+			log.Infof("Elasticsearch %s is not ready yet (%d. try)", sb.EsUrl, try)
+		}
+		if try >= maxTries {
+			log.Fatalf("Elasticsearch %s is not reachable after %d tries", sb.EsUrl, try)
+		}
+		try++
+		time.Sleep(time.Second)
+	}
 
 	err := sb.connectEs()
 	if err != nil {
