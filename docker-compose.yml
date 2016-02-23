@@ -1,0 +1,9 @@
+slackbot:
+  build: .
+  links:
+   - elasticsearch:elasticsearch
+  environment:
+   - SLACK_API_TOKEN=xoxb-22757066566-LtgYbLxQcDpedIKOe11PPFFH
+elasticsearch:
+  image: elasticsearch:2.2
+  command: elasticsearch -Dindex.number_of_replicas=0
