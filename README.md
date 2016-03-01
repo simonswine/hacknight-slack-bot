@@ -10,7 +10,7 @@ first. The indexing/matching is done using elasticsearch
 
 ## End of Hacknight state
 
-* We used [tray.io](https://www.tray.io) for handling the Slack part
+* We used [tray.io](https://tray.io) for handling the Slack part
 * Indexing was done with golang bleve library (was pretty slow, did not work 100% in the end)
 
 ## Example usage
@@ -107,3 +107,11 @@ slackbot_1      | time="2016-02-23T22:45:53Z" level=info msg="Connecting to slac
 slackbot_1      | time="2016-02-23T22:46:09Z" level=info msg="Incoming message 'what?'" 
 slackbot_1      | time="2016-02-23T22:46:09Z" level=info msg="query elasticsearch for 'what?' hits=6500" 
 ```
+
+To integrate it with Slack, we built a (tray.io)[https://tray.io] flow that uses Slack outgoing webhook on a specific channel. 
+
+1. Each messages posted to the channel is sent to the flow's trigger. 
+2. After checking if it's a valid user message (not from a bot), an http request is sent to golang part containing the full text of the message. 
+3. If the response is positive, the flow finally posts it (the quote) in Slack.
+
+![Screenshot](/screenshots/tray_flow.png?raw=true "Screenshot")
